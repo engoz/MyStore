@@ -12,6 +12,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/*
+fixedRate : makes Spring run the task on periodic intervals even if the last invocation may still be running.
+fixedDelay : specifically controls the next execution time when the last execution finishes.
+* */
+
+
 @Component
 public class ScheduleTest {
 
@@ -25,11 +31,12 @@ public class ScheduleTest {
         for (int i=0; i<1000; i++){
             try {
                 blockingQueue.put(i);
-                System.out.println("Loading pool size " + blockingQueue.size());
+
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
+        System.out.println("Loading pool size " + blockingQueue.size());
     }
 
     @Scheduled(fixedDelay = 1000)
@@ -40,7 +47,7 @@ public class ScheduleTest {
             executor.submit(()->{
                 int i1 = countExecuter.incrementAndGet();
                 System.out.println("Block call " + i1);
-                while (blockingQueue.size() > 0) {
+                if (blockingQueue.size() > 0) {
                     System.out.println("Thread Name - > " + Thread.currentThread().getName());
                     Integer poll = blockingQueue.poll();
                     System.out.println("Run Executor calisiyor Pool Value = " + poll + " Size : " + blockingQueue.size());
@@ -54,6 +61,15 @@ public class ScheduleTest {
         long passTime = System.currentTimeMillis() - start;
         //System.out.println("Exit Schedule " + passTime);
 
+    }
+
+    @Scheduled(cron = "0 * * * * *")
+    public void testCronTab(){
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
